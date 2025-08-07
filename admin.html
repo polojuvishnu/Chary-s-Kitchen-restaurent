@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - CHARY'S KITCHEN</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+  <style>
+    .admin-container {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .login-form {
+      margin-top: 20px;
+    }
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .dashboard {
+      display: none;
+      margin-top: 30px;
+      text-align: left;
+    }
+    .booking-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+    }
+    .expired {
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">CHARY'S KITCHEN Admin</div>
+  </header>
+
+  <div class="admin-container">
+    <h2>🔐 Admin Login</h2>
+    <form class="login-form" id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit" class="btn">Log In</button>
+    </form>
+
+    <div class="dashboard" id="dashboard">
+      <h3>📋 Reservation Dashboard</h3>
+      <p><strong>Last updated: <span id="updateTime">--:--</span></strong></p>
+      <div id="bookingsList">
+        <p>No bookings yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple login (for demo)
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      if (user === 'admin' && pass === 'chary123') {
+        document.querySelector('.login-form').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadBookings();
+        setInterval(loadBookings, 5000); // Auto-refresh every 5 sec
+      } else {
+        alert('Invalid credentials!');
+      }
+    });
+
+    // Load bookings from localStorage
+    function loadBookings() {
+      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      const list = document.getElementById('bookingsList');
+      const now = new Date();
+      let html = '';
+
+      if (bookings.length === 0) {
+        html = '<p>No bookings yet.</p>';
+      } else {
+        bookings.forEach((b, i) => {
+          const bookingTime = new Date(`${b.date}T${b.time}:00`);
+          const diff = (now - bookingTime) / 60000; // minutes
+          const isExpired = diff > 60; // expired after 1hr
+
+          html += `
+            <div class="booking-item ${isExpired ? 'expired' : ''}">
+              <strong>${b.name}</strong> (${b.guests} guests) - ${b.date} at ${b.time}
+              <br><small>${b.email}</small>
+              <br><span style="color:${isExpired ? '#999' : 'green'}">
+                Status: ${isExpired ? '✅ Expired & Cleared' : '🕒 Active'}
+              </span>
+            </div>
+          `;
+        });
+      }
+
+      list.innerHTML = html;
+      document.getElementById('updateTime').textContent = now.toLocaleTimeString();
+    }
+  </script>
+</body>
+</html>
